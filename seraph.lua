@@ -362,7 +362,7 @@ local themes = {
         text_outline = { Color = {} },
         ["1"] = { BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}, ScrollBarImageColor3 = {} },
         ["2"] = { BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}, ScrollBarImageColor3 = {} },
-        ["3"] = { BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}, ScrollBarImageColor3 = {} },
+        ["3"] = { BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}, ScrollBarImageColor3 = = {} },
     }
 }
 
@@ -1191,7 +1191,7 @@ function library:tab(properties)
         on_click = properties.on_click or function() end, visible = true,
     }
 
-    -- FIX: remove AutomaticSize, let UIListLayout HorizontalFlex handle width
+    -- FIX: remove AutomaticSize so UIListLayout HorizontalFlex can handle width
     local tab_button = library:create("TextButton", {
         FontFace = library.font, Text = '', Parent = self.tab_button_holder,
         BackgroundTransparency = 0, BorderSizePixel = 0, Size = UDim2.new(1, 0, 1, 0),
@@ -1247,6 +1247,7 @@ function library:tab(properties)
     end
 
     self.tabs[cfg.name] = cfg
+
     return setmetatable(cfg, library)
 end
 
