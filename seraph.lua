@@ -1,13 +1,5 @@
--- ════════════════════════════════════════════════════════════
--- SERAPH UI LIBRARY
 -- ═══════════════════════════════════════════════════════════════
--- Usage:
--- local library = loadstring(game:HttpGet("url"))()
--- local window = library:window({ name = "My UI", size = UDim2.new(0, 460, 0, 362) })
--- local tab = window:tab({ name = "Main" })
--- local col = tab:column({})
--- local sec = col:section({ name = "Settings" })
--- local toggle = sec:toggle({ name = "Aimbot", flag = "aimbot_toggle", default = false, callback = function(v) print(v) end })
+-- SKIDAPH UI LIBRARY
 -- ═══════════════════════════════════════════════════════════════
 
 if getgenv().loaded then
@@ -73,22 +65,16 @@ local guiDebounce = false
 local keybinds = {}
 
 -- ═══════════════════════════════════════════════════════════════
--- LOADING SCREEN (optimized)
+-- LOADING SCREEN
 -- ═══════════════════════════════════════════════════════════════
 
 local isDone
 
 local function get(url)
-    local ok, res = pcall(function()
-        return game:HttpGet(url)
-    end)
+    local ok, res = pcall(function() return game:HttpGet(url) end)
     if ok and res then return res end
     local ok2, res2 = pcall(function()
-        return request({
-            Url = url,
-            Method = "GET",
-            Headers = { ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
-        }).Body
+        return request({ Url = url, Method = "GET", Headers = { ["User-Agent"] = "Mozilla/5.0" } }).Body
     end)
     return ok2 and res2 or ""
 end
@@ -115,7 +101,6 @@ task.spawn(function()
     frame.AnchorPoint = Vector2.new(0.5, 0.5)
     frame.AutomaticSize = Enum.AutomaticSize.X
     frame.Parent = load
-
     Instance.new("UICorner", frame)
 
     local icon = Instance.new("ImageLabel")
@@ -127,17 +112,12 @@ task.spawn(function()
     icon.Image = "rbxassetid://101942723117519"
     icon.Parent = frame
 
-    local strokeConfig = {
-        { thickness = 2, transparency = 0 },
-        { thickness = 2.5, transparency = 0.25 },
-        { thickness = 3, transparency = 0.5 },
-        { thickness = 4, transparency = 0.75 },
-        { thickness = 8, transparency = 0.99 },
-        { thickness = 4.5, transparency = 0.8 },
-        { thickness = 5, transparency = 0.85 },
-        { thickness = 5.5, transparency = 0.9 },
-    }
-    for _, cfg in ipairs(strokeConfig) do
+    for _, cfg in ipairs({
+        { thickness = 2, transparency = 0 }, { thickness = 2.5, transparency = 0.25 },
+        { thickness = 3, transparency = 0.5 }, { thickness = 4, transparency = 0.75 },
+        { thickness = 8, transparency = 0.99 }, { thickness = 4.5, transparency = 0.8 },
+        { thickness = 5, transparency = 0.85 }, { thickness = 5.5, transparency = 0.9 },
+    }) do
         local s = Instance.new("UIStroke")
         s.Thickness = cfg.thickness
         s.Transparency = cfg.transparency
@@ -199,9 +179,7 @@ task.spawn(function()
                 local frameName = string.format("frame_%03d_delay-0.02s.png", j - 1)
                 task.spawn(function()
                     local data = get("https://raw.githubusercontent.com/ImSark/seraph-lib/main/seraph_gif_frames/" .. frameName)
-                    if data ~= "" then
-                        writefile(`seraph/gifs/{frameName}`, data)
-                    end
+                    if data ~= "" then writefile(`seraph/gifs/{frameName}`, data) end
                 end)
             end
             fps.Text = "We're getting things set up for you.. (" .. math.min(i + batchSize - 1, 150) .. "/150)"
@@ -227,9 +205,7 @@ task.spawn(function()
         local total = #names
         for i, name in ipairs(names) do
             local data = get(assets[name])
-            if data ~= "" then
-                writefile(`seraph/imgs/{name}`, data)
-            end
+            if data ~= "" then writefile(`seraph/imgs/{name}`, data) end
             fps.Text = "Downloading images.. (" .. i .. "/" .. total .. ")"
             task.wait(0.1)
         end
@@ -246,9 +222,7 @@ task.spawn(function()
     }) do
         if not isfile(soundPath) then
             local data = get(soundUrl)
-            if data ~= "" then
-                writefile(soundPath, data)
-            end
+            if data ~= "" then writefile(soundPath, data) end
         end
     end
 
@@ -1217,24 +1191,26 @@ function library:tab(properties)
         on_click = properties.on_click or function() end, visible = true,
     }
 
+    -- FIX: remove AutomaticSize, let UIListLayout HorizontalFlex handle width
     local tab_button = library:create("TextButton", {
         FontFace = library.font, Text = '', Parent = self.tab_button_holder,
-        BackgroundTransparency = 0, BorderSizePixel = 0, AutomaticSize = Enum.AutomaticSize.XY,
+        BackgroundTransparency = 0, BorderSizePixel = 0, Size = UDim2.new(1, 0, 1, 0),
         TextSize = 12, BackgroundColor3 = rgb(255, 255, 255), AutoButtonColor = false,
     })
     library:create("TextLabel", {
         FontFace = library.font, Size = UDim2.new(1, 0, 1, 0), Text = cfg.name,
         Parent = tab_button, BackgroundTransparency = 1, BorderSizePixel = 0,
-        AutomaticSize = Enum.AutomaticSize.XY, TextSize = 12, BackgroundColor3 = rgb(255, 255, 255)
+        TextSize = 12, BackgroundColor3 = rgb(255, 255, 255)
     })
     library:create("UIGradient", {
         Color = rgbseq{ rgbkey(0, themes.preset["1"]:lerp(rgb(), .3)), rgbkey(1, themes.preset["2"]) },
         Rotation = 90, Parent = tab_button
     })
 
+    -- FIX: start visible so AutomaticSize calculates, defer hiding
     local Page = library:create("Frame", {
         Parent = self.main_outline, BackgroundTransparency = 0.6, Position = dim2(0, 2, 0, 24),
-        Size = dim2(1, -4, 1, -48), BorderSizePixel = 0, BackgroundColor3 = rgb(0, 0, 0), Visible = false,
+        Size = dim2(1, -4, 1, -48), BorderSizePixel = 0, BackgroundColor3 = rgb(0, 0, 0), Visible = true,
     })
     cfg.page = Page
 
@@ -1260,10 +1236,17 @@ function library:tab(properties)
     function cfg.change_visibility(_, vis) tab_button.Visible = vis cfg.visible = vis end
 
     tab_button.MouseButton1Down:Connect(function() cfg.open_tab() end)
-    if not self.selected_tab then cfg.open_tab(true) end
+    
+    -- FIX: defer hiding non-selected tabs so AutomaticSize fires
+    if not self.selected_tab then
+        cfg.open_tab(true)
+    else
+        task.defer(function()
+            Page.Visible = false
+        end)
+    end
 
     self.tabs[cfg.name] = cfg
-
     return setmetatable(cfg, library)
 end
 
